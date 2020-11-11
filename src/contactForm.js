@@ -1,9 +1,7 @@
-import { h, Component, render } from 'https://unpkg.com/preact?module';
-import htm from 'https://unpkg.com/htm?module';
+import { h, Component, render } from 'preact';
 
-const html = htm.bind(h);
-
-const emailEndpoint = 'https://sls-weur-dev-api-mobilna-online.azurewebsites.net/api/email';
+const EMAIL_ENDPOINT = 'https://sls-weur-dev-api-mobilna-online.azurewebsites.net/api/email';
+const FALLBACK_EMAIL = window.atob(process.env.FALLBACK_EMAIL);
 const API_STATE = {
   INITIAL: 'INITIAL',
   LOADING: 'LOADING',
@@ -37,7 +35,7 @@ class ContactForm extends Component {
       window.grecaptcha.execute('6Ld5UOEZAAAAAGbMWH4Mz4DfCO_H2jrS2HnVg2u6', {action: 'submit'}).then((token) => {
         console.log(token);
 
-        return fetch(emailEndpoint, {
+        return fetch(EMAIL_ENDPOINT, {
           method: 'POST',
           body: JSON.stringify({
             name,
@@ -71,32 +69,36 @@ class ContactForm extends Component {
     console.log(this.state);
 
     if (apiState === API_STATE.LOADING) {
-      return html`
+      return (
         <div>Wysyłanie...</div>
-      `;
+      );
     }
 
     if (apiState === API_STATE.ERROR) {
-      return html`
-        <div>Nie udało się wysłać wiadomości!</div>
-      `;
+      return (
+        <div>
+          Nie udało się wysłać wiadomości!
+          <br />
+          Spróbuj ponownie później lub wyślij email bezpośrednio na adres <em>{FALLBACK_EMAIL}</em>.
+        </div>
+      );
     }
 
     if (apiState === API_STATE.SUCCESS) {
-      return html`
+      return (
         <div>Wiadomość wysłana pomyślnie!</div>
-      `;
+      );
     }
 
-    return html`
-      <form id="contact" action="" method="post" onSubmit=${this.submit}>
+    return (
+      <form id="contact" action="" method="post" onSubmit={this.submit}>
         <div class="row">
           <div class="col-md-6 col-sm-12">
             <fieldset>
               <input name="name" type="text" id="name" placeholder="Imię i Nazwisko*" required=""
                 style="background-color: rgba(250,250,250,0.3);"
-                onInput=${this.onFieldChange('name')}
-                value=${name}
+                onInput={this.onFieldChange('name')}
+                value={name}
               />
             </fieldset>
           </div>
@@ -104,8 +106,8 @@ class ContactForm extends Component {
             <fieldset>
               <input name="email" type="text" id="email" placeholder="E-Mail*"
                 required="" style="background-color: rgba(250,250,250,0.3);"
-                onInput=${this.onFieldChange('email')}
-                value=${email}
+                onInput={this.onFieldChange('email')}
+                value={email}
               />
             </fieldset>
           </div>
@@ -114,8 +116,8 @@ class ContactForm extends Component {
               <fieldset>
                 <textarea name="message" rows="6" id="message" placeholder="Wiadomość*"
                   required="" style="background-color: rgba(250,250,250,0.3);"
-                  onInput=${this.onFieldChange('message')}
-                  value=${message}
+                  onInput={this.onFieldChange('message')}
+                  value={message}
                 ></textarea>
               </fieldset>
               <p class="explanation">* pola wymagane</p>
@@ -123,17 +125,17 @@ class ContactForm extends Component {
           </div>
           <div class="col-lg-12">
             <fieldset>
-              <button type="submit" id="form-submit" class="main-button" disabled=${!isValid}>
+              <button type="submit" id="form-submit" class="main-button" disabled={!isValid}>
                 Wyślij Wiadomość
               </button>
             </fieldset>
           </div>
         </div>
       </form>
-    `;
+    );
   }
 }
 
 const mountingPoint = document.getElementById('contact-form');
 
-render(html`<${ContactForm} />`, mountingPoint);
+render(<ContactForm />, mountingPoint);
