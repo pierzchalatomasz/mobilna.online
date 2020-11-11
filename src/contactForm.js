@@ -66,8 +66,6 @@ class ContactForm extends Component {
     const { name, email, message, apiState } = this.state;
     const isValid = !!name && !!email && !!message;;
 
-    console.log(this.state);
-
     if (apiState === API_STATE.LOADING) {
       return (
         <div>Wysyłanie...</div>
