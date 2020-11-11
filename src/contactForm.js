@@ -1,4 +1,5 @@
 import { h, Component, render } from 'preact';
+import { sendAnalyticsEvent, EVENTS } from './analytics';
 
 const EMAIL_ENDPOINT = 'https://sls-weur-dev-api-mobilna-online.azurewebsites.net/api/email';
 const FALLBACK_EMAIL = window.atob(process.env.FALLBACK_EMAIL);
@@ -25,9 +26,10 @@ class ContactForm extends Component {
 
   submit = (e) => {
     e.preventDefault();
-    console.log('submit');
-
     const { name, email, message } = this.state;
+    const analyticsData = JSON.stringify({ name, email, message });
+    
+    sendAnalyticsEvent(EVENTS.FORM_SEND, analyticsData);
 
     this.setState({ apiState: API_STATE.LOADING });
 
@@ -54,10 +56,12 @@ class ContactForm extends Component {
       })
       .then(() => {
         this.setState({ apiState: API_STATE.SUCCESS });
+        sendAnalyticsEvent(EVENTS.FORM_SUCCESS, analyticsData);
       })
       .catch((error) => {
         console.error(error);
         this.setState({ apiState: API_STATE.ERROR });
+        sendAnalyticsEvent(EVENTS.FORM_ERROR, analyticsData);
       });
     });
   }
